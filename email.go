@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"log"
 	"net/mail"
 	"net/smtp"
 
 	"github.com/BurntSushi/toml"
+	"github.com/russross/blackfriday"
 )
 
 type EmailReleaseHandlerConfig struct {
@@ -31,7 +33,17 @@ type EmailReleaseHandler struct {
 }
 
 func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotification) error {
+type EmailPage struct {
+	Notification GithubNotification
+	Repository   Repo
+	ReleaseNotes template.HTML
+	Downloads    template.HTML
+}
+
 	var err error
+
+	releaseNotes := template.HTML(string(blackfriday.MarkdownCommon([]byte(notification.Release.Body))))
+	page := EmailPage{notification, *repo, releaseNotes, ""}
 
 	contents := new(bytes.Buffer)
 
@@ -41,9 +53,7 @@ func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotific
 	contents.Write([]byte("Content-Type: text/html; charset=UTF-8\r\n"))
 	contents.Write([]byte("\r\n"))
 
-	// TODO: Pass the Repo into the template too? Or set some stuff like app
-	//       name that's in Repo manually into notification?
-	if err = handler.template.Execute(contents, notification); err != nil {
+	if err = handler.template.Execute(contents, page); err != nil {
 		return err
 	}
 

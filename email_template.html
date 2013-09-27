@@ -1,14 +1,18 @@
 <!doctype html>
 <html>
 <head>
-    <title>{{ .Release.Name }}</title>
+    <title>{{ .Notification.Release.Name }}</title>
 </head>
 <body>
     <p>
-        A new version of {{ .Release.Name }} is <a href="{{ .Release.HtmlUrl }}">available</a>
+        A new version of {{ .Notification.Release.Name }} is <a href="{{ .Notification.Release.HtmlUrl }}">available</a>
     </p>
     <p>
-        {{ .Release.Body }}
+        {{ .ReleaseNotes }}
+    </p>
+
+    <p>
+    	{{ .Downloads}}
     </p>
 </body>
 </html>
