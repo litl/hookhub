@@ -19,7 +19,7 @@ type HookHubHandler struct {
 }
 
 type NotificationHandler interface {
-	Handle(repo *Repo, notification GithubNotification) error
+	Handle(repo *Repo, notification GithubNotification, debug bool) error
 }
 
 type Repo struct {
@@ -62,8 +62,8 @@ func (handler *HookHubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	switch notification.Event {
 	case GITHUB_EVENT_RELEASE:
-		for _, handler := range repo.releaseHandlers {
-			if err = handler.Handle(repo, notification); err != nil {
+		for _, eventHandler := range repo.releaseHandlers {
+			if err = eventHandler.Handle(repo, notification, handler.debug); err != nil {
 				log.Println("Error when handling release", err)
 			} else {
 				log.Println("Successfully handled release")

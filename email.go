@@ -32,7 +32,6 @@ type EmailReleaseHandler struct {
 	template   *template.Template
 }
 
-func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotification) error {
 type EmailPage struct {
 	Notification GithubNotification
 	Repository   Repo
@@ -40,6 +39,7 @@ type EmailPage struct {
 	Downloads    template.HTML
 }
 
+func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotification, debug bool) error {
 	var err error
 
 	releaseNotes := template.HTML(string(blackfriday.MarkdownCommon([]byte(notification.Release.Body))))
@@ -57,7 +57,9 @@ type EmailPage struct {
 		return err
 	}
 
-	if err = smtp.SendMail(fmt.Sprintf("%s:%d", handler.smtpServer, handler.smtpPort),
+	if debug {
+		log.Println(contents)
+	} else if err = smtp.SendMail(fmt.Sprintf("%s:%d", handler.smtpServer, handler.smtpPort),
 		handler.smtpAuth, handler.from.Address, []string{handler.to.Address},
 		contents.Bytes()); err != nil {
 		return err
