@@ -1,0 +1,22 @@
+bind_address = "0.0.0.0"
+bind_port = 4242
+
+[repos]
+    [repos.MyFirstRepo]
+    name = "My First App"
+    full_name = "user/repo"
+
+    [repos.MyFirstRepo.release_handlers]
+
+        [repos.MyFirstRepo.release_handlers.email_mymailinglist]
+        type = "email"
+
+        [repos.MyFirstRepo.release_handlers.email_mymailinglist.config]
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        smtp_username = "no-reply@mycompany.com"
+        smtp_password = "p@ssw0rd"
+
+        from = "HookHub <no-reply@mycompany.com>"
+        to = "Mailing List <mymailinglist@mycompany.com>"
+        template = "email_template.html"

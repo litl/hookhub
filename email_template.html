@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head>
+    <title>{{ .Release.Name }}</title>
+</head>
+<body>
+    <p>
+        A new version of {{ .Release.Name }} is <a href="{{ .Release.HtmlUrl }}">available</a>
+    </p>
+    <p>
+        {{ .Release.Body }}
+    </p>
+</body>
+</html>
