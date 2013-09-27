@@ -4,15 +4,19 @@
     <title>{{ .Notification.Release.Name }}</title>
 </head>
 <body>
-    <p>
-        A new version of {{ .Notification.Release.Name }} is <a href="{{ .Notification.Release.HtmlUrl }}">available</a>
-    </p>
-    <p>
-        {{ .ReleaseNotes }}
-    </p>
+	<h1>{{ .Notification.Release.Name }}</h1>
+	    <p>
+	        A new version of {{ .Repository.Name }} is <a href="{{ .ReleaseUrl }}">available</a>
+	    </p>
 
-    <p>
-    	{{ .Downloads}}
-    </p>
+	<h2>Release Notes</h2>
+    	<p>
+{{ .ReleaseNotes }}
+    	</p>
+
+    <h2>Downloads</h2>
+    	<p>
+{{ .Downloads}}
+    	</p>
 </body>
 </html>

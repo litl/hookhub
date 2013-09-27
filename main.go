@@ -23,8 +23,8 @@ type NotificationHandler interface {
 }
 
 type Repo struct {
-	name            string
-	fullName        string
+	Name            string
+	FullName        string
 	releaseHandlers []NotificationHandler
 }
 

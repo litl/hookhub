@@ -37,13 +37,29 @@ type EmailPage struct {
 	Repository   Repo
 	ReleaseNotes template.HTML
 	Downloads    template.HTML
+	ReleaseUrl   string
 }
 
 func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotification, debug bool) error {
 	var err error
 
+	// Unfortunately, Github's API currently returns a bad html_url (subject to change, of course)
+	releaseUrl := fmt.Sprintf("https://github.com/%s/releases/tag/%s", repo.FullName, notification.Release.TagName)
 	releaseNotes := template.HTML(string(blackfriday.MarkdownCommon([]byte(notification.Release.Body))))
-	page := EmailPage{notification, *repo, releaseNotes, ""}
+
+	var downloadsBuffer bytes.Buffer
+	downloadsBuffer.WriteString("<ul>\n")
+	for _, asset := range notification.Release.Assets {
+		// Github's API doesn't provide a normal download URL
+		downloadUrlFmt := "https://github.com/%s/releases/download/%s/%s"
+		downloadUrl := fmt.Sprintf(downloadUrlFmt, repo.FullName, notification.Release.TagName, asset.Name)
+
+		itemFmt := "<li><a href=\"%s\">%s</a></li>\n"
+		downloadsBuffer.WriteString(fmt.Sprintf(itemFmt, downloadUrl, asset.Label))
+	}
+	downloadsBuffer.WriteString("</ul>\n")
+
+	page := EmailPage{notification, *repo, releaseNotes, template.HTML(downloadsBuffer.String()), releaseUrl}
 
 	contents := new(bytes.Buffer)
 
