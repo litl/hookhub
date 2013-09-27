@@ -19,3 +19,5 @@ http://<host>:<port>/github_webhook
 
 HookHub is Copyright (c) 2013 litl, LLC and licensed under the MIT license.
 See the LICENSE file for full details.
+
+Heavily derived from https://github.com/litl/hookyapp :-)
