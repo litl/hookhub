@@ -45,11 +45,13 @@ func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotific
 
 	// Unfortunately, Github's API currently returns a bad html_url (subject to change, of course)
 	releaseUrl := fmt.Sprintf("https://github.com/%s/releases/tag/%s", repo.FullName, notification.Release.TagName)
-	releaseNotes := template.HTML(string(blackfriday.MarkdownCommon([]byte(notification.Release.Body))))
 
 	// Github's API doesn't provide a normal download URL. Template can append
 	// "/{{ GithubReleaseAsset.Name }}" to get the asset's download URL.
 	downloadBaseUrl := fmt.Sprintf("https://github.com/%s/releases/download/%s", repo.FullName, notification.Release.TagName)
+
+	// Github Release bodies are markdown, wee!
+	releaseNotes := template.HTML(string(blackfriday.MarkdownCommon([]byte(notification.Release.Body))))
 
 	page := EmailPage{notification, *repo, releaseNotes, releaseUrl, downloadBaseUrl}
 
