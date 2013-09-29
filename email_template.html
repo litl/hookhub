@@ -16,7 +16,11 @@
 
     <h2>Downloads</h2>
     	<p>
-{{ .Downloads}}
+            <ul>
+                {{ range .Notification.Release.Assets }}
+                <li><a href="{{ $.DownloadBaseUrl }}/{{ .Name }}">{{ .Label }}</a></li>
+                {{ end }}
+            </ul>
     	</p>
 </body>
 </html>

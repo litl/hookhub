@@ -34,10 +34,10 @@ type EmailReleaseHandler struct {
 
 type EmailPage struct {
 	Notification GithubNotification
-	Repository   Repo
-	ReleaseNotes template.HTML
-	Downloads    template.HTML
-	ReleaseUrl   string
+	Repository      Repo
+	ReleaseNotes    template.HTML
+	ReleaseUrl      string
+	DownloadBaseUrl string
 }
 
 func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotification, debug bool) error {
@@ -47,19 +47,11 @@ func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotific
 	releaseUrl := fmt.Sprintf("https://github.com/%s/releases/tag/%s", repo.FullName, notification.Release.TagName)
 	releaseNotes := template.HTML(string(blackfriday.MarkdownCommon([]byte(notification.Release.Body))))
 
-	var downloadsBuffer bytes.Buffer
-	downloadsBuffer.WriteString("<ul>\n")
-	for _, asset := range notification.Release.Assets {
-		// Github's API doesn't provide a normal download URL
-		downloadUrlFmt := "https://github.com/%s/releases/download/%s/%s"
-		downloadUrl := fmt.Sprintf(downloadUrlFmt, repo.FullName, notification.Release.TagName, asset.Name)
+	// Github's API doesn't provide a normal download URL. Template can append
+	// "/{{ GithubReleaseAsset.Name }}" to get the asset's download URL.
+	downloadBaseUrl := fmt.Sprintf("https://github.com/%s/releases/download/%s", repo.FullName, notification.Release.TagName)
 
-		itemFmt := "<li><a href=\"%s\">%s</a></li>\n"
-		downloadsBuffer.WriteString(fmt.Sprintf(itemFmt, downloadUrl, asset.Label))
-	}
-	downloadsBuffer.WriteString("</ul>\n")
-
-	page := EmailPage{notification, *repo, releaseNotes, template.HTML(downloadsBuffer.String()), releaseUrl}
+	page := EmailPage{notification, *repo, releaseNotes, releaseUrl, downloadBaseUrl}
 
 	contents := new(bytes.Buffer)
 
