@@ -12,8 +12,8 @@ const (
 )
 
 type config struct {
-	BindAddress string               `toml:"bind_address"`
-	BindPort    int                  `toml:"bind_port"`
+	BindAddress  string                `toml:"bind_address"`
+	BindPort     int                   `toml:"bind_port"`
 	RepoConfigs  map[string]repoConfig `toml:"repos"`
 }
 
