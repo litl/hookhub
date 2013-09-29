@@ -35,7 +35,7 @@ type GithubRelease struct {
 }
 
 type GithubReleaseAsset struct {
-	Url 		  string    `json:"url"`
+	Url           string    `json:"url"`
 	Id            int       `json:"id"`
 	Name          string    `json:"name"`
 	Label         string    `json:"label"`

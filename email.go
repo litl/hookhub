@@ -33,7 +33,7 @@ type EmailReleaseHandler struct {
 }
 
 type EmailPage struct {
-	Notification GithubNotification
+	Notification    GithubNotification
 	Repository      Repo
 	ReleaseNotes    template.HTML
 	ReleaseUrl      string
