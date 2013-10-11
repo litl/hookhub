@@ -28,7 +28,6 @@ type GithubRelease struct {
 	Body            string               `json:"body"`
 	Draft           bool                 `json:"draft"`
 	Prerelease      bool                 `json:"prerelease"`
-	NumberOfCrashes int                  `json:"number_of_crashes"`
 	CreatedAt       time.Time            `json:"created_at"`
 	PublishedAt     time.Time            `json:"published_at"`
 	Assets          []GithubReleaseAsset `json:"assets,omitempty"`
