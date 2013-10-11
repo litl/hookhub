@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -37,18 +36,17 @@ func (handler *HookHubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 	var err error
-	var bytes []byte
-	if bytes, err = ioutil.ReadAll(r.Body); err != nil {
-		fmt.Println("Failed to read request body", err)
-		return
+	if err = r.ParseForm(); err !=nil {
+		fmt.Println("Failed to parse form values from request body", err)
 	}
+	var jsonStr = r.PostFormValue("payload")
 
 	if handler.debug {
-		log.Println("Received notification", string(bytes))
+		log.Println("Received notification", jsonStr)
 	}
 
 	var notification GithubNotification
-	if err = json.Unmarshal(bytes, &notification); err != nil {
+	if err = json.Unmarshal([]byte(jsonStr), &notification); err != nil {
 		log.Println("Got errors parsing notification", err)
 		return
 	}
