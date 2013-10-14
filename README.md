@@ -13,7 +13,7 @@ You will need a hookhub.toml configuration file in the server's working
 directory. An example is provided.
 
 You will also need to configure your Github webhooks to point at
-http://<host>:<port>/github_webhook, and then modify them to listen
+http://\<host\>:\<port\>/github_webhook, and then modify them to listen
 for Releases.
 
 First, find the id for your hook:
