@@ -36,7 +36,7 @@ func (handler *HookHubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 	var err error
-	if err = r.ParseForm(); err !=nil {
+	if err = r.ParseForm(); err != nil {
 		fmt.Println("Failed to parse form values from request body", err)
 	}
 	var jsonStr = r.PostFormValue("payload")
