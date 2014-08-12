@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/litl/hookhub/fogbugz"
 	"log"
 	"net/http"
 	"os"
@@ -11,20 +12,26 @@ import (
 )
 
 type HookHubHandler struct {
-	bindAddress string
-	bindPort    int
-	repos       map[string]*Repo
-	debug       bool
+	bindAddress    string
+	bindPort       int
+	repos          map[string]*Repo
+	debug          bool
+	fogbugzSession *fogbugz.Session
 }
 
-type NotificationHandler interface {
-	Handle(repo *Repo, notification GithubNotification, debug bool) error
+type ReleaseHandler interface {
+	Handle(repo *Repo, notification GithubReleaseEvent, debug bool) error
+}
+
+type PushHandler interface {
+	Handle(hookHubHandler *HookHubHandler, notification GithubPushEvent, debug bool) error
 }
 
 type Repo struct {
 	Name            string
 	FullName        string
-	releaseHandlers []NotificationHandler
+	releaseHandlers []ReleaseHandler
+	pushHandlers    []PushHandler
 }
 
 func (handler *HookHubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -45,26 +52,46 @@ func (handler *HookHubHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		log.Println("Received notification", jsonStr)
 	}
 
-	var notification GithubNotification
-	if err = json.Unmarshal([]byte(jsonStr), &notification); err != nil {
-		log.Println("Got errors parsing notification", err)
-		return
-	}
-	notification.Event = event
-
-	repo := handler.repos[notification.Repository.FullName]
-	if repo == nil {
-		log.Println("No repo configured for", notification.Repository.FullName)
-		return
-	}
-
-	switch notification.Event {
+	switch event {
 	case GITHUB_EVENT_RELEASE:
+		var notification GithubReleaseEvent
+		if err = json.Unmarshal([]byte(jsonStr), &notification); err != nil {
+			log.Println("Got errors parsing notification", err)
+			log.Println(jsonStr)
+			return
+		}
+
+		repo := handler.repos[notification.Repository.FullName]
+		if repo == nil {
+			log.Println("No repo configured for", notification.Repository.FullName)
+			return
+		}
 		for _, eventHandler := range repo.releaseHandlers {
 			if err = eventHandler.Handle(repo, notification, handler.debug); err != nil {
 				log.Println("Error when handling release", err)
 			} else {
 				log.Println("Successfully handled release")
+			}
+		}
+		break
+	case GITHUB_EVENT_PUSH:
+		var notification GithubPushEvent
+		if err = json.Unmarshal([]byte(jsonStr), &notification); err != nil {
+			log.Println("Got errors parsing notification", err)
+			log.Println(jsonStr)
+			return
+		}
+
+		repo := handler.repos[notification.Repository.FullName]
+		if repo == nil {
+			log.Println("No repo configured for", notification.Repository.FullName)
+			return
+		}
+		for _, eventHandler := range repo.pushHandlers {
+			if err = eventHandler.Handle(handler, notification, handler.debug); err != nil {
+				log.Println("Error when handling push", err)
+			} else {
+				log.Println("Successfully handled push")
 			}
 		}
 		break

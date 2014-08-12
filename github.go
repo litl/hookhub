@@ -7,9 +7,30 @@ import (
 // The value of the X-Github-Event header
 const (
 	GITHUB_EVENT_RELEASE string = "release"
+	GITHUB_EVENT_PUSH    string = "push"
 )
 
-type GithubNotification struct {
+type GithubPushEvent struct {
+	Ref        string           `json:"ref"`
+	Commits    []GithubCommit   `json:"commits"`
+	HeadCommit GithubCommit     `json:"head_commit"`
+	Repository GithubRepository `json:"repository"`
+	Pusher     GithubUser       `json:"pusher"`
+}
+
+type GithubUser struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type GithubCommit struct {
+	Id      string     `json:"id"`
+	Message string     `json:"message"`
+	Url     string     `json:"url"`
+	Author  GithubUser `json:"author"`
+}
+
+type GithubReleaseEvent struct {
 	Action     string           `json:"action,omitempty"`
 	Release    GithubRelease    `json:"release,omitempty"`
 	Repository GithubRepository `json:"repository"`
