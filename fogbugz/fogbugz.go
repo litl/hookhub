@@ -29,6 +29,24 @@ type caseTag struct {
 	Operations string
 }
 
+func (session *Session) ResolveBug(caseNumber string, comment string) error {
+	//$ http --form POST https://litl.fogbugz.com/api.asp cmd=resolve token=igl1mpdt5gu4q3qod50f4gb3nbnedb ixBug=54393 sEvent=sandydidit
+	values := url.Values{}
+	values.Set("cmd", "resolve")
+	values.Set("token", session.token)
+	values.Set("ixBug", caseNumber)
+	values.Set("sEvent", comment) // TODO: Sanitize?
+	url := &url.URL{"https", "", nil, session.host, "/api.asp", "", ""}
+
+	resp, err := http.PostForm(url.String(), values)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
 func (session *Session) FileBug(project string, area string, title string, content string) (string, error) {
 	values := url.Values{}
 	values.Set("cmd", "new")

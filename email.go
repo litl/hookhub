@@ -33,14 +33,14 @@ type EmailReleaseHandler struct {
 }
 
 type EmailPage struct {
-	Notification    GithubNotification
+	Notification    GithubReleaseEvent
 	Repository      Repo
 	ReleaseNotes    template.HTML
 	ReleaseUrl      string
 	DownloadBaseUrl string
 }
 
-func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotification, debug bool) error {
+func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubReleaseEvent, debug bool) error {
 	var err error
 
 	// Unfortunately, Github's API currently returns a bad html_url (subject to change, of course)
@@ -78,7 +78,7 @@ func (handler EmailReleaseHandler) Handle(repo *Repo, notification GithubNotific
 	return nil
 }
 
-func NewEmailReleaseHandler(configPrimitive toml.Primitive) (NotificationHandler, error) {
+func NewEmailReleaseHandler(configPrimitive toml.Primitive) (ReleaseHandler, error) {
 	var err error
 
 	var config EmailReleaseHandlerConfig

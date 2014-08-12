@@ -5,31 +5,34 @@ import (
 	"log"
 )
 
-type ReleaseHandlerType string
+type HandlerType string
 
 const (
-	EMAIL ReleaseHandlerType = "email"
+	EMAIL           HandlerType = "email"
+	FOGBUGZ_RESOLVE HandlerType = "fogbugz_resolve"
 )
 
 type config struct {
-	BindAddress string                `toml:"bind_address"`
-	BindPort    int                   `toml:"bind_port"`
-	RepoConfigs map[string]repoConfig `toml:"repos"`
+	BindAddress          string                `toml:"bind_address"`
+	BindPort             int                   `toml:"bind_port"`
+	RepoConfigs          map[string]repoConfig `toml:"repos"`
+	FogbugzDefaultConfig FogbugzConfig         `toml:"fogbugz_default_config"`
 }
 
 type repoConfig struct {
-	Name                  string                          `toml:"name"`
-	FullName              string                          `toml:"full_name"`
-	ReleaseHandlerConfigs map[string]releaseHandlerConfig `toml:"release_handlers"`
+	Name                  string                   `toml:"name"`
+	FullName              string                   `toml:"full_name"`
+	ReleaseHandlerConfigs map[string]handlerConfig `toml:"release_handlers"`
+	PushHandlerConfigs    map[string]handlerConfig `toml:"push_handlers"`
 }
 
-type releaseHandlerConfig struct {
-	HandlerType   ReleaseHandlerType `toml:"type"`
-	HandlerConfig toml.Primitive     `toml:"config"`
+type handlerConfig struct {
+	HandlerType   HandlerType    `toml:"type"`
+	HandlerConfig toml.Primitive `toml:"config"`
 }
 
-func (repoConfig *repoConfig) buildRepo() (*Repo, error) {
-	releaseHandlers := make([]NotificationHandler, 0)
+func (repoConfig *repoConfig) buildRepo(fogbugzDefaultConfig FogbugzConfig) (*Repo, error) {
+	releaseHandlers := make([]ReleaseHandler, 0)
 
 	for _, releaseHandlerConfig := range repoConfig.ReleaseHandlerConfigs {
 		switch releaseHandlerConfig.HandlerType {
@@ -43,7 +46,21 @@ func (repoConfig *repoConfig) buildRepo() (*Repo, error) {
 		}
 	}
 
-	return &Repo{repoConfig.Name, repoConfig.FullName, releaseHandlers}, nil
+	pushHandlers := make([]PushHandler, 0)
+
+	for _, pushHandlerConfig := range repoConfig.PushHandlerConfigs {
+		switch pushHandlerConfig.HandlerType {
+		case FOGBUGZ_RESOLVE:
+			pushHandler, err := NewFogbugzResolveHandler(fogbugzDefaultConfig, pushHandlerConfig.HandlerConfig)
+			if err != nil {
+				return nil, err
+			}
+
+			pushHandlers = append(pushHandlers, pushHandler)
+		}
+	}
+
+	return &Repo{repoConfig.Name, repoConfig.FullName, releaseHandlers, pushHandlers}, nil
 }
 
 func (handler *HookHubHandler) ParseConfig(configFile string) error {
@@ -54,7 +71,7 @@ func (handler *HookHubHandler) ParseConfig(configFile string) error {
 
 	repos := make(map[string]*Repo)
 	for _, repoConfig := range config.RepoConfigs {
-		repo, err := repoConfig.buildRepo()
+		repo, err := repoConfig.buildRepo(config.FogbugzDefaultConfig)
 		if err != nil {
 			return err
 		}
